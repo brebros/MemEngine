@@ -6,3 +6,13 @@ backups/
 *.pyc
 __pycache__/
 .DS_Store
+mem.db
+mem.db-journal
+mem.db-wal
+mem.db-shm
+backups/
+*.pyc
+__pycache__/
+.DS_Store
+*.egg-info/
+.venv/

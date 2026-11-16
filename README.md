@@ -1,8 +1,13 @@
 # MemEngine
 
+[![CI](https://github.com/brebros/MemEngine/actions/workflows/ci.yml/badge.svg)](https://github.com/brebros/MemEngine/actions/workflows/ci.yml)
+![tests](https://img.shields.io/badge/tests-13%20passing-brightgreen)
+![deps](https://img.shields.io/badge/dependencies-zero-success)
+![python](https://img.shields.io/badge/python-3.10%2B-blue)
+
 **Zero-dependency long-term memory for AI agents.** Hindsight-inspired concepts (retain / recall / observe, memory banks, memory types), rebuilt on pure Python stdlib — one file, one SQLite database, no Docker, no PostgreSQL, no LLM service.
 
-Built for [Hermes Agent](https://github.com/nousresearch) setups, works with any agent that can run a CLI.
+Built for [Hermes Agent](https://github.com/nousresearch) setups, works with any agent that can run a CLI. Running in production on a live VPS since Nov 2026.
 
 ## Why
 
@@ -13,17 +18,22 @@ MemEngine keeps only what matters:
 - **Append-only storage** — no silent overwrites; wrong entry? `delete` by explicit ID and re-add
 - **Anti-duplicate writes** — token-overlap guard blocks near-identical entries
 - **Observation-first recall** — distilled lessons (observations) always rank above raw experiences
+- **Secret-filtering quality gate** — every write passes regex screening: API keys, bot tokens, PEM blocks and credential assignments never enter long-term memory
 - **Wikilinks + backlinks** — memories reference each other; ask "what points at this?"
 - **Health check** — `stats` tells you when the agent stores experiences but never learns from them
 
-## Install
+## Install (v2 — packaged)
 
 ```bash
-git clone https://github.com/YOU/memengine.git
-sudo ln -sf "$(pwd)/memengine/mem.py" /usr/local/bin/mem
+git clone https://github.com/brebros/MemEngine.git
+pip install MemEngine/          # or: pip install -e MemEngine
 ```
 
-Requirements: Python 3.11+ with SQLite FTS5 (ships with most builds). Nothing else.
+That installs the `mem` CLI entry point (proper package under `src/memengine/` — db, quality gate, dedup and CLI as separate modules).
+
+Legacy single-file mode still works: `mem.py` is a compat shim over the package.
+
+Requirements: Python 3.10+ with SQLite FTS5 (ships with most builds). Nothing else.
 
 Optional: `export MEMENGINE_DB=/path/to/mem.db` to relocate the database (default `/root/memengine/mem.db`).
 
@@ -90,6 +100,16 @@ MemEngine is designed to be paired with an agent-side skill that defines *when* 
 - ❌ Embedding models / LLM extraction — the calling agent does extraction; recall is full-text (BM25)
 - ❌ Vault/markdown mirroring — two storage locations means one will drift
 - ❌ Auto-crons — backups are a command, run when you decide
+
+## Testing
+
+```bash
+pip install -e .[dev]
+pytest -q          # 13 tests: quality gate, dedup, CLI round-trips, links, backup rotation
+ruff check src tests
+```
+
+CI runs lint + full suite on Python 3.10/3.12/3.13 (GitHub Actions).
 
 ## License
 
